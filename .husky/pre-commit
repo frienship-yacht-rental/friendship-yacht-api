@@ -1,0 +1,4 @@
+# Format + lint whatever is staged, then prove the whole project still holds together.
+pnpm exec lint-staged
+pnpm run type-check
+pnpm run build

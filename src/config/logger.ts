@@ -68,7 +68,10 @@ const logger = winston.createLogger({
       ...fileRotation,
     }),
   ],
-  // Crashes are logged to their own files instead of taking the process down silently.
+  // Crashes are written to their own files before the process exits, so the
+  // cause is never lost. Winston's default (exitOnError: true) does the exit
+  // once the transports have flushed; resuming after an uncaught exception
+  // would leave the process in an undefined state.
   exceptionHandlers: [
     new winston.transports.File({
       filename: path.join(LOG_DIR, "exceptions.log"),
@@ -81,7 +84,6 @@ const logger = winston.createLogger({
       ...fileRotation,
     }),
   ],
-  exitOnError: false,
 });
 
 // Tests would otherwise spam the reporter with request logs.

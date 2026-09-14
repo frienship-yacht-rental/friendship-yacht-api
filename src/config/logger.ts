@@ -1,5 +1,6 @@
 import path from "node:path";
 import winston from "winston";
+import { env, isProduction, isTest } from "./env.js";
 
 const { colorize, combine, errors, json, printf, splat, timestamp, uncolorize } =
   winston.format;
@@ -11,8 +12,7 @@ const { colorize, combine, errors, json, printf, splat, timestamp, uncolorize } 
  */
 export const LOG_DIR = path.resolve(process.cwd(), "logs");
 
-const isProduction = process.env.NODE_ENV === "production";
-const level = process.env.LOG_LEVEL ?? (isProduction ? "info" : "debug");
+const level = env.LOG_LEVEL ?? (isProduction ? "info" : "debug");
 
 /** Shared across every file transport: rotate at 5 MB and keep the last 5 files. */
 const fileRotation = {
@@ -85,7 +85,7 @@ const logger = winston.createLogger({
 });
 
 // Tests would otherwise spam the reporter with request logs.
-if (process.env.NODE_ENV !== "test") {
+if (!isTest) {
   logger.add(new winston.transports.Console({ format: consoleFormat }));
 }
 

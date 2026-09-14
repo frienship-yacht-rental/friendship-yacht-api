@@ -1,6 +1,7 @@
 import express from "express";
 import type { Express, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
+import { isProduction } from "./config/env.js";
 import logger, { morganStream } from "./config/logger.js";
 
 const app: Express = express();
@@ -10,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Access logs go through winston so they land in logs/ alongside everything else.
 app.use(
-  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", {
+  morgan(isProduction ? "combined" : "dev", {
     stream: morganStream,
   }),
 );

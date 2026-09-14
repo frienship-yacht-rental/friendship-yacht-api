@@ -1,12 +1,10 @@
-import "dotenv/config";
 import type { Server } from "node:http";
 import app from "./app.js";
+import { env } from "./config/env.js";
 import logger from "./config/logger.js";
 
-const port: string = process.env.PORT || "8000";
-
-const server: Server = app.listen(port, () => {
-  logger.info(`Server started on the port : http://localhost:${port}`);
+const server: Server = app.listen(env.PORT, () => {
+  logger.info(`Server listening on http://localhost:${env.PORT}`);
 });
 
 /** Stop accepting new connections, then let winston flush before the process dies. */

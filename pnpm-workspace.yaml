@@ -1,2 +1,4 @@
-onlyBuiltDependencies:
-  - esbuild
+# pnpm 11: dependencies whose install scripts may run. esbuild's script only
+# verifies the platform binary that tsx needs.
+allowBuilds:
+  esbuild: true

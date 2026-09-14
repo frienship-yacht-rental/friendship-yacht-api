@@ -1,11 +1,20 @@
 {
-  "name": "backend",
+  "name": "friendship-yacht-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "./dist/server.js",
+  "description": "HTTP API for the Friendship Yachts web app.",
+  "private": true,
+  "license": "UNLICENSED",
   "type": "module",
+  "main": "./dist/server.js",
+  "engines": {
+    "node": ">=20.9.0",
+    "pnpm": ">=11.0.0"
+  },
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "prebuild": "pnpm run clean",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
@@ -18,10 +27,6 @@
     "test:coverage": "vitest run --coverage",
     "prepare": "husky"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.17.0",
   "lint-staged": {
     "*.{ts,js,mjs,cjs}": [
       "eslint --fix --max-warnings=0",
@@ -47,7 +52,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^26.4.1",
+    "@types/node": "^24",
     "@types/supertest": "^7.2.1",
     "@types/winston": "^2.4.4",
     "@vitest/coverage-v8": "^5.0.0",

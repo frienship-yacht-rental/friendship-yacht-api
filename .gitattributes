@@ -1,0 +1,18 @@
+# Normalise line endings so diffs stay clean on mixed Windows/macOS/Linux teams.
+* text=auto eol=lf
+
+# Generated: collapse in diffs and exclude from language stats.
+pnpm-lock.yaml -diff linguist-generated
+
+# Binary assets — never line-ending converted, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary

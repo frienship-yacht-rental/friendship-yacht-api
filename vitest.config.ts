@@ -16,6 +16,13 @@ export default defineConfig({
       reportsDirectory: "./coverage",
       include: ["src/**/*.ts"],
       exclude: ["src/**/*.{test,spec}.ts", "src/server.ts"],
+      thresholds: {
+        // A floor to ratchet upward, not a target. Raise as coverage grows.
+        statements: 60,
+        branches: 60,
+        functions: 60,
+        lines: 60,
+      },
     },
   },
 });

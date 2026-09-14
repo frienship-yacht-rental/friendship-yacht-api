@@ -55,7 +55,7 @@ const logger = winston.createLogger({
   level,
   levels: winston.config.npm.levels,
   format: fileFormat,
-  defaultMeta: { service: "friendship-yachts-backend" },
+  defaultMeta: { service: "friendship-yacht-api" },
   transports: [
     // Errors only, so a failure is never buried in the noise of the combined log.
     new winston.transports.File({

@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "husky:setup": "husky"
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -24,8 +24,8 @@
   "packageManager": "pnpm@10.17.0",
   "lint-staged": {
     "*.{ts,js,mjs,cjs}": [
-      "prettier --write",
-      "eslint --fix --max-warnings=0"
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"

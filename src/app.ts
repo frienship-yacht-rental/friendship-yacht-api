@@ -1,10 +1,20 @@
+import cors from "cors";
 import express from "express";
-import type { Express, NextFunction, Request, Response } from "express";
+import type { Express, Request, Response } from "express";
+import helmet from "helmet";
 import morgan from "morgan";
-import { isProduction } from "./config/env.js";
-import logger, { morganStream } from "./config/logger.js";
+import { env, isProduction } from "./config/env.js";
+import { morganStream } from "./config/logger.js";
+import { errorHandler, notFoundHandler } from "./middleware/error.js";
 
 const app: Express = express();
+
+// Security headers first, so they apply to every response including errors.
+app.use(helmet());
+
+// Only listed browser origins may call this API. Server-to-server callers
+// (the Next.js server) are not subject to CORS.
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,33 +32,7 @@ app.get("/health", (_req: Request, res: Response) => {
   });
 });
 
-app.use((req: Request, res: Response) => {
-  logger.warn("Route not found", { method: req.method, path: req.originalUrl });
-  res.status(404).json({ message: "Route not found" });
-});
-
-/** Errors thrown by express internals (body-parser, etc.) carry their own status. */
-interface HttpError extends Error {
-  status?: number;
-  statusCode?: number;
-}
-
-app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-  const status = err.status ?? err.statusCode ?? 500;
-
-  // A malformed request is the caller's problem; keep error.log for genuine faults.
-  const log = status >= 500 ? logger.error.bind(logger) : logger.warn.bind(logger);
-  log(err.message, {
-    status,
-    stack: err.stack,
-    method: req.method,
-    path: req.originalUrl,
-  });
-
-  // Never leak an internal stack trace to the client.
-  res.status(status).json({
-    message: status >= 500 ? "Internal server error" : err.message,
-  });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

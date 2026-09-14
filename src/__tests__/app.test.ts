@@ -22,7 +22,7 @@ describe("unknown routes", () => {
     const response = await request(app).get("/this-route-does-not-exist");
 
     expect(response.status).toBe(404);
-    expect(response.body).toEqual({ message: "Route not found" });
+    expect(response.body).toEqual({ message: "Route not found", code: "NOT_FOUND" });
   });
 });
 
@@ -35,5 +35,45 @@ describe("body parsing", () => {
 
     expect(response.status).toBeGreaterThanOrEqual(400);
     expect(response.status).toBeLessThan(500);
+  });
+});
+
+describe("security headers", () => {
+  it("sets helmet defaults and hides the framework", async () => {
+    const response = await request(app).get("/health");
+
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+    expect(response.headers["x-frame-options"]).toBeDefined();
+    expect(response.headers["strict-transport-security"]).toBeDefined();
+    expect(response.headers["x-powered-by"]).toBeUndefined();
+  });
+});
+
+describe("cors", () => {
+  it("allows the configured web origin", async () => {
+    const response = await request(app)
+      .get("/health")
+      .set("Origin", "http://localhost:3000");
+
+    expect(response.headers["access-control-allow-origin"]).toBe("http://localhost:3000");
+    expect(response.headers["access-control-allow-credentials"]).toBe("true");
+  });
+
+  it("does not echo an origin that is not on the list", async () => {
+    const response = await request(app)
+      .get("/health")
+      .set("Origin", "https://evil.example");
+
+    expect(response.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("answers preflight for the configured origin", async () => {
+    const response = await request(app)
+      .options("/health")
+      .set("Origin", "http://localhost:3000")
+      .set("Access-Control-Request-Method", "POST");
+
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-methods"]).toContain("POST");
   });
 });

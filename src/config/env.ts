@@ -31,6 +31,20 @@ export const envSchema = z.object({
         .filter(Boolean),
     )
     .pipe(z.array(z.url()).min(1)),
+
+  /** Requests per window per client IP on /api routes. */
+  RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(100),
+  RATE_LIMIT_WINDOW_MS: z.coerce
+    .number()
+    .int()
+    .min(1000)
+    .default(15 * 60 * 1000),
+
+  /**
+   * Set when running behind a load balancer or reverse proxy so `req.ip` and
+   * rate limiting use the client address from X-Forwarded-For, not the proxy.
+   */
+  TRUST_PROXY: z.stringbool().default(false),
 });
 
 const parsed = envSchema.safeParse(process.env);

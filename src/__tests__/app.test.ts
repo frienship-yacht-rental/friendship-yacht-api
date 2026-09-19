@@ -22,7 +22,11 @@ describe("unknown routes", () => {
     const response = await request(app).get("/this-route-does-not-exist");
 
     expect(response.status).toBe(404);
-    expect(response.body).toEqual({ message: "Route not found", code: "NOT_FOUND" });
+    expect(response.body).toEqual({
+      message: "Route not found",
+      code: "NOT_FOUND",
+      requestId: expect.any(String),
+    });
   });
 });
 
@@ -75,5 +79,29 @@ describe("cors", () => {
 
     expect(response.status).toBe(204);
     expect(response.headers["access-control-allow-methods"]).toContain("POST");
+  });
+});
+
+describe("request id", () => {
+  it("mints an id and echoes it in the response", async () => {
+    const response = await request(app).get("/health");
+
+    expect(response.headers["x-request-id"]).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it("propagates an id supplied by an upstream caller", async () => {
+    const response = await request(app)
+      .get("/health")
+      .set("X-Request-Id", "trace-abc-123");
+
+    expect(response.headers["x-request-id"]).toBe("trace-abc-123");
+  });
+
+  it("includes the id in error bodies so users can quote it", async () => {
+    const response = await request(app)
+      .get("/does-not-exist")
+      .set("X-Request-Id", "trace-abc-123");
+
+    expect(response.body.requestId).toBe("trace-abc-123");
   });
 });

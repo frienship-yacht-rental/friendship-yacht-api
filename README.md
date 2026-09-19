@@ -13,6 +13,7 @@ HTTP API for the Friendship Yachts web app
 | Validation    | Zod v4                                             |
 | Logging       | winston (structured JSON) + morgan access logs     |
 | Tests         | Vitest 5 + supertest                               |
+| Hardening     | helmet, cors, express-rate-limit                   |
 | Lint / format | ESLint 10 (flat config) + Prettier 3               |
 
 ## Requirements
@@ -28,8 +29,20 @@ cp .env.example .env      # then adjust
 pnpm dev
 ```
 
-The server listens on http://localhost:8000 by default and answers
-`GET /health`.
+The server listens on http://localhost:8000 by default.
+
+## Endpoints
+
+| Method | Path                   | Purpose                            |
+| ------ | ---------------------- | ---------------------------------- |
+| GET    | `/health`              | Liveness probe (unversioned)       |
+| GET    | `/api/v1/yachts`       | List yachts — `?limit=20&offset=0` |
+| GET    | `/api/v1/yachts/:slug` | One yacht                          |
+| POST   | `/api/v1/inquiries`    | Submit an enquiry                  |
+
+Business routes are rate limited per client IP (see `.env.example`). Every
+response carries an `X-Request-Id`; send one in to have it echoed back and
+included in logs.
 
 Environment variables are validated by `src/config/env.ts` at startup. A
 missing or malformed value stops the process with a readable message rather
@@ -53,18 +66,31 @@ than surfacing as `undefined` on the first request.
 
 ```
 src/
-├── server.ts          # Process entry: listen, graceful shutdown
-├── app.ts             # Express app: middleware order and routes
+├── server.ts            # Process entry: listen, graceful shutdown
+├── app.ts               # Express app: middleware pipeline
+├── routes.ts            # Mounts module routers under /api/v1
 ├── config/
-│   ├── env.ts         # Validated environment variables
-│   └── logger.ts      # winston setup, morgan stream
+│   ├── env.ts           # Validated environment variables
+│   └── logger.ts        # winston setup, morgan stream
+├── lib/
+│   └── errors.ts        # AppError hierarchy
 ├── middleware/
-│   └── error.ts       # 404 and error handlers, error codes
-└── __tests__/         # Vitest specs
+│   ├── request-id.ts    # X-Request-Id correlation
+│   ├── validate.ts      # Zod validation of body/query/params
+│   └── error.ts         # 404 and error handlers
+├── modules/             # One folder per capability, fixed internal layout
+│   ├── yachts/          # Read reference: schema, repository, service, controller, router, index
+│   └── inquiries/       # Write reference, with a cross-module dependency
+└── __tests__/           # Vitest + supertest specs
+docs/adr/                # Architecture decision records
 ```
 
 `app.ts` is exported without listening so tests can drive it through
 supertest; only `server.ts` binds a port.
+
+The layering rules, how to add a module, and how to reuse this repository as
+a boilerplate are in [`AGENTS.md`](AGENTS.md). Decisions and their trade-offs
+are in [`docs/adr/`](docs/adr/).
 
 ## Conventions
 
@@ -73,13 +99,19 @@ supertest; only `server.ts` binds a port.
 Every non-2xx response has the same body:
 
 ```json
-{ "message": "Human-readable, may change", "code": "STABLE_MACHINE_CODE" }
+{
+  "message": "Human-readable, may change",
+  "code": "STABLE_MACHINE_CODE",
+  "details": { "body": { "fieldErrors": { "email": ["Invalid email"] } } },
+  "requestId": "…"
+}
 ```
 
 `code` is what clients branch on — the web app's API client already reads it.
-Throw an `Error` with a `status` (and optionally a `code`) from any handler and
-`errorHandler` produces this shape. 5xx responses never include the original
-message or stack.
+`details` appears only on 4xx and holds client-safe structure such as field
+errors. Throw an `AppError` subclass from `src/lib/errors.ts` anywhere in a
+request and `errorHandler` produces this shape. 5xx responses never include
+the original message, stack or details. See ADR-0002.
 
 ### Environment
 

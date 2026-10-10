@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { inquiryRouter } from "./modules/inquiries/index.js";
 import { yachtRouter } from "./modules/yachts/index.js";
+import { authRouter } from "./modules/auth/index.js";
 
 /**
  * Versioned API surface. Breaking changes get a new prefix; `/health` stays
@@ -11,6 +12,7 @@ export function createApiRouter(): Router {
 
   api.use("/yachts", yachtRouter);
   api.use("/inquiries", inquiryRouter);
+  api.use("/auth", authRouter);
 
   return api;
 }

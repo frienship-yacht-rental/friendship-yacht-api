@@ -1,3 +1,6 @@
+// Type-only, so this file stays free of better-auth at runtime.
+import type { APIError } from "better-auth";
+
 /**
  * Application errors carry everything the error handler needs to build a
  * response, so route code never touches `res.status()` for failures — it
@@ -63,6 +66,16 @@ export class TooManyRequestsError extends AppError {
 export class ValidationError extends AppError {
   constructor(details: unknown, message = "Validation failed") {
     super(message, { status: 422, code: "VALIDATION_ERROR", details });
+  }
+}
+
+export class BetterAuthError extends AppError {
+  constructor(error: APIError) {
+    super(error.body?.message ?? error.message, {
+      status: error.statusCode,
+      code: error.body?.code ?? "AUTH_ERROR",
+      cause: error,
+    });
   }
 }
 

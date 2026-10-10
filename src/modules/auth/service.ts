@@ -1,9 +1,9 @@
-import { APIError } from "better-auth";
+import { isAPIError } from "better-auth/api";
 import { auth } from "../../lib/auth.js";
-import { AppError } from "../../lib/errors.js";
-import type { IAuthService, SignInType } from "./schema.js";
+import { BetterAuthError } from "../../lib/errors.js";
+import type { IAuthService, SignInType, SignUpType } from "./schema.js";
 
-class AuthService implements IAuthService {
+export class AuthService implements IAuthService {
   async signIn({ email, password }: SignInType) {
     try {
       const data = await auth.api.signInEmail({
@@ -20,16 +20,44 @@ class AuthService implements IAuthService {
         error: null,
       };
     } catch (error) {
-      if (error instanceof APIError) {
-        throw new AppError(error.body?.message ?? error.message, {
-          status: error.statusCode,
-          code: error.body?.code ?? "AUTH_ERROR",
-          cause: error,
-        });
-      }
+      if (isAPIError(error)) throw new BetterAuthError(error);
+      throw error;
+    }
+  }
+
+  async signUp({ email, password, username }: SignUpType) {
+    try {
+      const data = await auth.api.signUpEmail({
+        body: {
+          email,
+          name: username,
+          password,
+          rememberMe: true,
+          callbackURL: "http://localhost:8000", //TODO : Have to update this URL
+        },
+      });
+
+      return {
+        data,
+        error: null,
+      };
+    } catch (error) {
+      if (isAPIError(error)) throw new BetterAuthError(error);
+      throw error;
+    }
+  }
+
+  async signOut() {
+    try {
+      const data = await auth.api.signOut();
+
+      return {
+        data,
+        error: null,
+      };
+    } catch (error) {
+      if (isAPIError(error)) throw new BetterAuthError(error);
       throw error;
     }
   }
 }
-
-export const authService = new AuthService();

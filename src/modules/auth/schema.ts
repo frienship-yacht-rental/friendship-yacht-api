@@ -10,12 +10,26 @@ export const SIGN_IN_VALIDATION = z.object({
     .trim(),
 });
 
+export const SIGN_UP_VALIDATION = z.object({
+  username: z.string().trim(),
+  email: z.email().trim(),
+  password: z
+    .string()
+    .min(6, "Password should be atleast 6 characters long.")
+    .max(10, "Password should not be more than 10 characters.")
+    .trim(),
+});
+
 export type SignInType = z.infer<typeof SIGN_IN_VALIDATION>;
+export type SignUpType = z.infer<typeof SIGN_UP_VALIDATION>;
 
 type BetterAuthResponse<TData, TError> =
   { data: TData; error: null } | { data: null; error: TError };
 
 type SignInSession = Awaited<ReturnType<typeof auth.api.signInEmail>>;
+type SignUpSession = Awaited<ReturnType<typeof auth.api.signUpEmail>>;
+type SignOutSession = Awaited<ReturnType<typeof auth.api.signOut>>;
+
 type AuthError = {
   message: string;
   status: number;
@@ -26,4 +40,10 @@ export interface IAuthService {
     email,
     password,
   }: SignInType) => Promise<BetterAuthResponse<SignInSession, AuthError>>;
+  signUp: ({
+    email,
+    username,
+    password,
+  }: SignUpType) => Promise<BetterAuthResponse<SignUpSession, AuthError>>;
+  signOut: () => Promise<BetterAuthResponse<SignOutSession, AuthError>>;
 }

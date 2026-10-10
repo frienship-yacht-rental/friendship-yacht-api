@@ -1,4 +1,4 @@
 name: Friendship Yatchs Backend
 variables:
   - name: baseUrl
-    value: http://localhost:8000/v1
+    value: http://localhost:8000/api/v1

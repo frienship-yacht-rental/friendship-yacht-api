@@ -10,6 +10,8 @@ import { TooManyRequestsError } from "./lib/errors.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { requestId } from "./middleware/request-id.js";
 import { API_PREFIX, createApiRouter } from "./routes.js";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth.js";
 
 const app: Express = express();
 
@@ -28,6 +30,7 @@ app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 // Access logs go through winston so they land in logs/ alongside everything else.
 morgan.token("id", (req: Request) => req.id);

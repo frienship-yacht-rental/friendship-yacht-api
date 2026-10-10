@@ -20,7 +20,7 @@ app.set("trust proxy", env.TRUST_PROXY ? 1 : false);
 app.use(requestId);
 
 // Security headers next, so they apply to every response including errors.
-app.use(helmet());
+app.use(helmet.hidePoweredBy());
 
 // Only listed browser origins may call this API. Server-to-server callers
 // (the Next.js server) are not subject to CORS.
@@ -42,7 +42,7 @@ app.use(
 
 // Liveness probe. Unversioned on purpose: infrastructure must not care about
 // API versions. Add /health/ready with dependency checks once there are any.
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/v1/health", (_req: Request, res: Response) => {
   res.status(200).json({
     message: "Server status OK",
   });

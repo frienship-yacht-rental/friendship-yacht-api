@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: mysql-friendship-yatchs
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: friendship-yatchs
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { auth } from "../../lib/auth.js";
+import type { auth } from "../lib/auth.js";
 
 export const SIGN_IN_VALIDATION = z.object({
   email: z.email().trim(),

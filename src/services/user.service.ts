@@ -1,7 +1,7 @@
 import { isAPIError } from "better-auth/api";
-import { auth } from "../../lib/auth.js";
-import { BetterAuthError } from "../../lib/errors.js";
-import type { IAuthService, SignInType, SignUpType } from "./schema.js";
+import { auth } from "../lib/auth.js";
+import { BetterAuthError } from "../lib/errors.js";
+import type { IAuthService, SignInType, SignUpType } from "../schemas/user.schema.js";
 
 export class AuthService implements IAuthService {
   async signIn({ email, password }: SignInType) {

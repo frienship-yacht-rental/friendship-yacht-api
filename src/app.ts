@@ -9,9 +9,12 @@ import { morganStream } from "./config/logger.js";
 import { TooManyRequestsError } from "./lib/errors.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { requestId } from "./middleware/request-id.js";
-import { API_PREFIX, createApiRouter } from "./routes.js";
+import { userRouter } from "./routes/user.routes.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
+
+// Versioned API surface. Breaking changes get a new prefix.
+const API_PREFIX = "/api/v1";
 
 const app: Express = express();
 
@@ -62,8 +65,9 @@ app.use(
     // Route through the shared error handler so the body has the usual shape.
     handler: (_req, _res, next) => next(new TooManyRequestsError()),
   }),
-  createApiRouter(),
 );
+
+app.use(`${API_PREFIX}/auth`, userRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

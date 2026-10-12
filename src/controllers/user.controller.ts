@@ -1,14 +1,16 @@
 import type { RequestHandler, Request, Response } from "express";
 import { ValidationError } from "../lib/errors.js";
+import type { ApiResponse } from "../schemas/apiResponse.schema.js";
 import { SIGN_IN_VALIDATION, SIGN_UP_VALIDATION } from "../schemas/user.schema.js";
 import { AuthService } from "../services/user.service.js";
 
 class UserController {
   constructor(private readonly service: AuthService) {}
 
-  // Arrow properties, not methods: the router passes these by reference, and
-  // a plain method would lose `this` on the way.
-  signUpUser: RequestHandler = async (req: Request, res: Response) => {
+  signUpUser: RequestHandler = async (
+    req: Request,
+    res: Response<ApiResponse<{ id: string }>>,
+  ) => {
     const { data, error } = SIGN_UP_VALIDATION.safeParse(req.body);
 
     if (error) throw new ValidationError(error, "Sign up validation failed.");
@@ -26,10 +28,13 @@ class UserController {
     });
   };
 
-  signInUser: RequestHandler = async (req: Request, res: Response) => {
+  signInUser: RequestHandler = async (
+    req: Request,
+    res: Response<ApiResponse<{ id: string; name: string; email: string }>>,
+  ) => {
     const { data, error } = SIGN_IN_VALIDATION.safeParse(req.body);
 
-    if (error) throw new ValidationError(error, "Sign up validation failed.");
+    if (error) throw new ValidationError(error, "Sign in validation failed.");
 
     const { email, password } = data;
 
@@ -46,7 +51,10 @@ class UserController {
     });
   };
 
-  signOutUser: RequestHandler = async (req: Request, res: Response) => {
+  signOutUser: RequestHandler = async (
+    req: Request,
+    res: Response<ApiResponse<null>>,
+  ) => {
     await this.service.signOut();
 
     res.status(204).json({

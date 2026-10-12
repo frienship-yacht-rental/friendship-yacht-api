@@ -23,6 +23,7 @@ describe("unknown routes", () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({
+      success: false,
       message: "Route not found",
       code: "NOT_FOUND",
       requestId: expect.any(String),

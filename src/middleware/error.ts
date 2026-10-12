@@ -13,11 +13,13 @@ export interface HttpError extends Error {
 }
 
 /**
- * Wire format for every non-2xx response. `code` is stable and intended for
+ * Wire format for every non-2xx response. `success` is always false, so a
+ * client can tell it apart from a success body. `code` is stable and intended for
  * clients; `message` is for humans and may change; `details` is optional
  * structured, client-safe information such as validation issues.
  */
 export interface ErrorBody {
+  success: false;
   message: string;
   code: string;
   details?: unknown;
@@ -48,6 +50,7 @@ export const notFoundHandler: RequestHandler = (req, res) => {
     path: req.originalUrl,
   });
   const body: ErrorBody = {
+    success: false,
     message: "Route not found",
     code: "NOT_FOUND",
     requestId: req.id,
@@ -80,6 +83,7 @@ export function errorHandler(
 
   // Never leak an internal message, stack trace or details to the client.
   const body: ErrorBody = {
+    success: false,
     message: isServerError ? "Internal server error" : err.message,
     code: isServerError ? "INTERNAL_ERROR" : (err.code ?? codeForStatus(status)),
     requestId: req.id,

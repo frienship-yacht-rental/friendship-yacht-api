@@ -100,6 +100,7 @@ Every non-2xx response has the same body:
 
 ```json
 {
+  "success": false,
   "message": "Human-readable, may change",
   "code": "STABLE_MACHINE_CODE",
   "details": { "body": { "fieldErrors": { "email": ["Invalid email"] } } },

@@ -32,6 +32,7 @@ describe("errorHandler", () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
+      success: false,
       message: "Internal server error",
       code: "INTERNAL_ERROR",
       requestId: expect.any(String),

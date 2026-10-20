@@ -1,6 +1,6 @@
 import request, { type Response } from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import app from "../app.js";
+import app from "../../app.js";
 import {
   resetStore,
   seedUser,
@@ -9,7 +9,7 @@ import {
   store,
 } from "./auth.helpers.js";
 
-vi.mock("../lib/auth.js", async () => {
+vi.mock("../../lib/auth.js", async () => {
   const { testAuth } = await import("./auth.helpers.js");
   return { auth: testAuth };
 });

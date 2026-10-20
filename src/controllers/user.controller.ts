@@ -67,10 +67,7 @@ class UserController {
     const result = await this.service.signOut(fromNodeHeaders(req.headers));
 
     res.setHeader("Set-Cookie", result.cookies);
-    res.status(204).json({
-      message: "User signed out successfully",
-      success: true,
-    });
+    res.status(204).end();
   };
 }
 

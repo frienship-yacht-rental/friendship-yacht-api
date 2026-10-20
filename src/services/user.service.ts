@@ -2,6 +2,7 @@ import { isAPIError } from "better-auth/api";
 import { auth } from "../lib/auth.js";
 import { BetterAuthError } from "../lib/errors.js";
 import type { IAuthService, SignInType, SignUpType } from "../schemas/user.schema.js";
+import { env } from "../config/env.js";
 
 export class AuthService implements IAuthService {
   async signIn({ email, password }: SignInType, headers: Headers) {
@@ -11,7 +12,7 @@ export class AuthService implements IAuthService {
           email,
           password,
           rememberMe: true,
-          callbackURL: "http://localhost:8000", //TODO : Have to update this URL
+          callbackURL: env.ADMIN_URL,
         },
         headers,
         returnHeaders: true,
@@ -36,7 +37,7 @@ export class AuthService implements IAuthService {
           name: username,
           password,
           rememberMe: true,
-          callbackURL: "http://localhost:8000", //TODO : Have to update this URL
+          callbackURL: env.ADMIN_URL,
         },
         headers,
         returnHeaders: true,

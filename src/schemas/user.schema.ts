@@ -3,21 +3,20 @@ import type { auth } from "../lib/auth.js";
 
 export const SIGN_IN_VALIDATION = z.object({
   email: z.string().trim().pipe(z.email()),
-  password: z
-    .string()
-    .trim()
-    .min(6, "Password should be atleast 6 characters long.")
-    .max(10, "Password should not be more than 10 characters."),
+  // Only non-empty: a length rule here would lock out anyone whose password
+  // predates it. better-auth checks the password itself.
+  password: z.string().min(1, "Password is required."),
 });
 
 export const SIGN_UP_VALIDATION = z.object({
-  username: z.string().trim().min(3, "Username should be atleast 3 characters long."),
+  username: z.string().trim().min(3, "Username should be at least 3 characters long."),
   email: z.string().trim().pipe(z.email()),
+  // Not trimmed: the password is stored exactly as typed. The limits must match
+  // `emailAndPassword` in src/lib/auth.ts.
   password: z
     .string()
-    .trim()
-    .min(6, "Password should be atleast 6 characters long.")
-    .max(10, "Password should not be more than 10 characters."),
+    .min(8, "Password should be at least 8 characters long.")
+    .max(128, "Password should not be more than 128 characters."),
 });
 
 export type SignInType = z.infer<typeof SIGN_IN_VALIDATION>;

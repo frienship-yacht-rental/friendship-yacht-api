@@ -6,7 +6,7 @@ import {
   type Verification,
 } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
-import type { SignInType, SignUpType } from "../schemas/user.schema.js";
+import type { SignInType, SignUpType } from "../../schemas/user.schema.js";
 
 /**
  * Shared harness for the auth route specs: a real better-auth instance on an
@@ -15,7 +15,7 @@ import type { SignInType, SignUpType } from "../schemas/user.schema.js";
  * Wire it in at the top of a spec. `vi.mock` is hoisted above the imports, so
  * the app only ever sees this instance and `src/db/index.ts` is never loaded:
  *
- *   vi.mock("../lib/auth.js", async () => {
+ *   vi.mock("../../lib/auth.js", async () => {
  *     const { testAuth } = await import("./auth.helpers.js");
  *     return { auth: testAuth };
  *   });
@@ -43,8 +43,8 @@ export const testAuth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
-    minPasswordLength: 6,
-    maxPasswordLength: 10,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
   },
 });
 

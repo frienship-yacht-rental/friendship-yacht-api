@@ -1,6 +1,6 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import app from "../app.js";
+import app from "../../app.js";
 import {
   resetStore,
   seedUser,
@@ -10,7 +10,7 @@ import {
   toCookieHeader,
 } from "./auth.helpers.js";
 
-vi.mock("../lib/auth.js", async () => {
+vi.mock("../../lib/auth.js", async () => {
   const { testAuth } = await import("./auth.helpers.js");
   return { auth: testAuth };
 });
@@ -281,12 +281,8 @@ describe("POST /api/v1/auth/sign-in validation", () => {
       body: { email: TEST_USER.email, password: 12345678 },
     },
     {
-      when: "the password has 5 characters",
-      body: { email: TEST_USER.email, password: "five5" },
-    },
-    {
-      when: "the password has 11 characters",
-      body: { email: TEST_USER.email, password: "elevenchars" },
+      when: "the password is empty",
+      body: { email: TEST_USER.email, password: "" },
     },
     { when: "the body is an empty object", body: {} },
   ])("responds 422 with the error envelope when $when", async ({ body }) => {
@@ -313,16 +309,18 @@ describe("POST /api/v1/auth/sign-in validation", () => {
     });
   });
 
-  it("accepts a password of exactly 6 characters", async () => {
-    const user = await seedUser({ password: "sixsix" });
+  // A length rule here would lock out users whose password predates it.
+  it("passes a password shorter than sign-up allows on to the credential check", async () => {
+    const user = await seedUser();
 
-    const response = await signIn(user.credentials);
+    const response = await signIn({ email: user.credentials.email, password: "a" });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(401);
+    expect(response.body.code).toBe("INVALID_EMAIL_OR_PASSWORD");
   });
 
-  it("accepts a password of exactly 10 characters", async () => {
-    const user = await seedUser({ password: "tenletters" });
+  it("accepts the longest password sign-up allows", async () => {
+    const user = await seedUser({ password: "p".repeat(128) });
 
     const response = await signIn(user.credentials);
 
@@ -342,22 +340,12 @@ describe("POST /api/v1/auth/sign-in validation details", () => {
     });
   });
 
-  it("reports the schema's message for a password that is too short", async () => {
-    const response = await signIn({ email: TEST_USER.email, password: "five5" });
+  it("reports the schema's message for an empty password", async () => {
+    const response = await signIn({ email: TEST_USER.email, password: "" });
 
     expect(response.body.details).toMatchObject({
       body: {
-        fieldErrors: { password: ["Password should be atleast 6 characters long."] },
-      },
-    });
-  });
-
-  it("reports the schema's message for a password that is too long", async () => {
-    const response = await signIn({ email: TEST_USER.email, password: "elevenchars" });
-
-    expect(response.body.details).toMatchObject({
-      body: {
-        fieldErrors: { password: ["Password should not be more than 10 characters."] },
+        fieldErrors: { password: ["Password is required."] },
       },
     });
   });
@@ -372,11 +360,13 @@ describe("POST /api/v1/auth/sign-in validation details", () => {
     });
   });
 
-  it("does not echo the rejected password", async () => {
+  it("does not echo the password of a rejected body", async () => {
     const response = await signIn({
-      email: TEST_USER.email,
+      email: "not-an-email",
       password: "hunter2-hunter2",
     });
+
+    expect(response.status).toBe(422);
 
     expect(response.text).not.toContain("hunter2-hunter2");
   });
@@ -394,7 +384,7 @@ describe("POST /api/v1/auth/sign-in surrounding whitespace", () => {
     expect(response.status).toBe(200);
   });
 
-  it("signs in when the password has surrounding whitespace", async () => {
+  it("does not trim the password", async () => {
     const user = await seedUser({ password: "anchor42" });
 
     const response = await signIn({
@@ -402,29 +392,15 @@ describe("POST /api/v1/auth/sign-in surrounding whitespace", () => {
       password: " anchor42 ",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(401);
   });
 
-  it("accepts a password that is within 10 characters once trimmed", async () => {
-    const user = await seedUser({ password: "anchor42" });
+  it("signs in with a password whose surrounding whitespace is part of it", async () => {
+    const user = await seedUser({ password: " anchor42 " });
 
-    const response = await signIn({
-      email: user.credentials.email,
-      password: "  anchor42  ",
-    });
+    const response = await signIn(user.credentials);
 
     expect(response.status).toBe(200);
-  });
-
-  it("rejects a password that is under 6 characters once trimmed", async () => {
-    const user = await seedUser();
-
-    const response = await signIn({
-      email: user.credentials.email,
-      password: "  abc   ",
-    });
-
-    expect(response.status).toBe(422);
   });
 });
 

@@ -12,7 +12,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     throw new UnauthorizedError();
   }
 
-  // spreading data in the request object
+  // assigning data in the request object
   req.user = sessionData.user;
   req.session = sessionData.session;
 

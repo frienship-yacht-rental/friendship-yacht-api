@@ -14,6 +14,7 @@ export default defineConfig({
       DATABASE_URL: "mysql://test:test@127.0.0.1:3306/test",
       BETTER_AUTH_SECRET: "test-only-secret-never-used-outside-vitest",
       BETTER_AUTH_URL: "http://localhost:8000",
+      ADMIN_URL: "http://localhost:3000",
     },
     clearMocks: true,
     restoreMocks: true,

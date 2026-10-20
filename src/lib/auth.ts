@@ -14,7 +14,8 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
-    minPasswordLength: 6,
-    maxPasswordLength: 10,
+    // Must match SIGN_UP_VALIDATION in src/schemas/user.schema.ts.
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
   },
 });

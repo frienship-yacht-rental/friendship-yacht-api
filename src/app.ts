@@ -10,8 +10,6 @@ import { TooManyRequestsError } from "./lib/errors.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { requestId } from "./middleware/request-id.js";
 import { userRouter } from "./routes/user.routes.js";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "./lib/auth.js";
 
 // Versioned API surface. Breaking changes get a new prefix.
 const API_PREFIX = "/api/v1";
@@ -25,7 +23,7 @@ app.set("trust proxy", env.TRUST_PROXY ? 1 : false);
 app.use(requestId);
 
 // Security headers next, so they apply to every response including errors.
-app.use(helmet.hidePoweredBy());
+app.use(helmet());
 
 // Only listed browser origins may call this API. Server-to-server callers
 // (the Next.js server) are not subject to CORS.
@@ -33,7 +31,6 @@ app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 // Access logs go through winston so they land in logs/ alongside everything else.
 morgan.token("id", (req: Request) => req.id);

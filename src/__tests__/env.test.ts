@@ -6,6 +6,7 @@ const required = {
   DATABASE_URL: "mysql://user:password@127.0.0.1:3306/friendship-yachts",
   BETTER_AUTH_SECRET: "a".repeat(32),
   BETTER_AUTH_URL: "http://localhost:8000",
+  ADMIN_URL: "http://localhost:3000",
 };
 
 describe("envSchema", () => {

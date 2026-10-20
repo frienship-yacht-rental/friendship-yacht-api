@@ -1,6 +1,6 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import app from "../app.js";
+import app from "../../app.js";
 import {
   resetStore,
   seedUser,
@@ -11,7 +11,7 @@ import {
   toCookieHeader,
 } from "./auth.helpers.js";
 
-vi.mock("../lib/auth.js", async () => {
+vi.mock("../../lib/auth.js", async () => {
   const { testAuth } = await import("./auth.helpers.js");
   return { auth: testAuth };
 });
@@ -40,10 +40,10 @@ const invalidBodies: { label: string; body: object }[] = [
   { label: "a missing email", body: { username, password } },
   { label: "a missing password", body: { username, email } },
   { label: "an invalid email", body: { username, email: "not-an-email", password } },
-  { label: "a 5-character password", body: { username, email, password: "p".repeat(5) } },
+  { label: "a 7-character password", body: { username, email, password: "p".repeat(7) } },
   {
-    label: "an 11-character password",
-    body: { username, email, password: "p".repeat(11) },
+    label: "a 129-character password",
+    body: { username, email, password: "p".repeat(129) },
   },
   { label: "an empty JSON body", body: {} },
 ];
@@ -163,7 +163,7 @@ describe("POST /api/v1/auth/sign-up", () => {
       expect(response.body).toMatchObject(validationError);
     });
 
-    it.each([6, 10])("accepts a %i-character password", async (length) => {
+    it.each([8, 128])("accepts a %i-character password", async (length) => {
       const response = await signUp({ ...TEST_USER, password: "p".repeat(length) });
 
       expect(response.status).toBe(201);
@@ -187,11 +187,11 @@ describe("POST /api/v1/auth/sign-up", () => {
     });
 
     it("passes the schema's own message through for the failing field", async () => {
-      const response = await signUp({ ...TEST_USER, password: "p".repeat(5) });
+      const response = await signUp({ ...TEST_USER, password: "p".repeat(7) });
 
       expect(response.body.details).toMatchObject({
         body: {
-          fieldErrors: { password: ["Password should be atleast 6 characters long."] },
+          fieldErrors: { password: ["Password should be at least 8 characters long."] },
         },
       });
     });
@@ -211,14 +211,14 @@ describe("POST /api/v1/auth/sign-up", () => {
     });
 
     it("does not echo a rejected password back in the error", async () => {
-      const response = await signUp({ ...TEST_USER, password: "rejected-secret" });
+      const response = await signUp({ ...TEST_USER, password: "rejectd" });
 
       expect(response.status).toBe(422);
-      expect(response.text).not.toContain("rejected-secret");
+      expect(response.text).not.toContain("rejectd");
     });
   });
 
-  // SIGN_UP_VALIDATION declares .trim() on all three fields.
+  // SIGN_UP_VALIDATION trims the username and email, never the password.
   describe("surrounding whitespace", () => {
     it("stores the username without its surrounding whitespace", async () => {
       await signUp({ ...TEST_USER, username: "  Test Sailor  " });
@@ -233,32 +233,37 @@ describe("POST /api/v1/auth/sign-up", () => {
       expect(store.user[0]?.email).toBe("sailor@example.com");
     });
 
-    it("stores the password without its surrounding whitespace", async () => {
+    it("stores the password exactly as typed, surrounding whitespace included", async () => {
       await signUp({ ...TEST_USER, password: " anchor42 " });
 
       await expect(
-        sessionCookieFor({ email: TEST_USER.email, password: "anchor42" }),
+        sessionCookieFor({ email: TEST_USER.email, password: " anchor42 " }),
       ).resolves.toContain("session_token=");
+      await expect(
+        sessionCookieFor({ email: TEST_USER.email, password: "anchor42" }),
+      ).rejects.toThrow();
     });
 
-    it("applies the minimum password length to the trimmed password", async () => {
-      const response = await signUp({ ...TEST_USER, password: "  abc  " });
-
-      expect(response.status).toBe(422);
-      expect(response.body).toMatchObject(validationError);
-    });
-
-    it("rejects a whitespace-only password with the 422 validation error", async () => {
-      const response = await signUp({ ...TEST_USER, password: " ".repeat(8) });
-
-      expect(response.status).toBe(422);
-      expect(response.body).toMatchObject(validationError);
-    });
-
-    it("applies the maximum password length to the trimmed password", async () => {
-      const response = await signUp({ ...TEST_USER, password: "  anchor42  " });
+    it("counts surrounding whitespace toward the minimum password length", async () => {
+      const response = await signUp({ ...TEST_USER, password: " abcdef " });
 
       expect(response.status).toBe(201);
+    });
+
+    it("accepts a whitespace-only password of the minimum length", async () => {
+      const response = await signUp({ ...TEST_USER, password: " ".repeat(8) });
+
+      expect(response.status).toBe(201);
+    });
+
+    it("counts surrounding whitespace toward the maximum password length", async () => {
+      const response = await signUp({
+        ...TEST_USER,
+        password: ` ${"p".repeat(127)} `,
+      });
+
+      expect(response.status).toBe(422);
+      expect(response.body).toMatchObject(validationError);
     });
 
     it.each([

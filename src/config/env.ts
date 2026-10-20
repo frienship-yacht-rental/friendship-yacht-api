@@ -46,6 +46,8 @@ export const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   /** Public base URL of this API; better-auth builds callback URLs from it. */
   BETTER_AUTH_URL: z.url(),
+
+  ADMIN_URL: z.url(),
 });
 
 const parsed = envSchema.safeParse(process.env);

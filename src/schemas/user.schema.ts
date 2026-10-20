@@ -2,22 +2,22 @@ import { z } from "zod";
 import type { auth } from "../lib/auth.js";
 
 export const SIGN_IN_VALIDATION = z.object({
-  email: z.email().trim(),
+  email: z.string().trim().pipe(z.email()),
   password: z
     .string()
+    .trim()
     .min(6, "Password should be atleast 6 characters long.")
-    .max(10, "Password should not be more than 10 characters.")
-    .trim(),
+    .max(10, "Password should not be more than 10 characters."),
 });
 
 export const SIGN_UP_VALIDATION = z.object({
-  username: z.string().trim(),
-  email: z.email().trim(),
+  username: z.string().trim().min(3, "Username should be atleast 3 characters long."),
+  email: z.string().trim().pipe(z.email()),
   password: z
     .string()
+    .trim()
     .min(6, "Password should be atleast 6 characters long.")
-    .max(10, "Password should not be more than 10 characters.")
-    .trim(),
+    .max(10, "Password should not be more than 10 characters."),
 });
 
 export type SignInType = z.infer<typeof SIGN_IN_VALIDATION>;

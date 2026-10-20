@@ -6,8 +6,15 @@ export default defineConfig({
     globals: false,
     include: ["src/**/*.{test,spec}.ts"],
     exclude: ["node_modules/**", "dist/**"],
-    // Keeps the winston console transport quiet while the reporter is running.
-    env: { NODE_ENV: "test" },
+    // NODE_ENV keeps the winston console transport quiet while the reporter is
+    // running. The rest satisfy the required vars in src/config/env.ts; nothing
+    // connects to them, since the pool is lazy and the auth specs mock it out.
+    env: {
+      NODE_ENV: "test",
+      DATABASE_URL: "mysql://test:test@127.0.0.1:3306/test",
+      BETTER_AUTH_SECRET: "test-only-secret-never-used-outside-vitest",
+      BETTER_AUTH_URL: "http://localhost:8000",
+    },
     clearMocks: true,
     restoreMocks: true,
     coverage: {

@@ -79,6 +79,19 @@ export async function seedUser(overrides: Partial<SignUpType> = {}) {
   };
 }
 
+type ValidationIssue = { path: string[]; message: string };
+
+/**
+ * The issues behind a 422. The controllers put the ZodError itself in
+ * `details`, which serialises as `{ name, message }` with the issue list as
+ * JSON in `message`.
+ */
+export function validationIssues(body: {
+  details: { message: string };
+}): ValidationIssue[] {
+  return JSON.parse(body.details.message) as ValidationIssue[];
+}
+
 /** Joins Set-Cookie values (`response.get("Set-Cookie")`) into a Cookie request header. */
 export function toCookieHeader(setCookie: string[] = []): string {
   return setCookie.map((cookie) => cookie.split(";", 1)[0]).join("; ");

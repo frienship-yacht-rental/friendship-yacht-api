@@ -43,8 +43,8 @@ app.use(
   ),
 );
 
-// Liveness probe. Unversioned on purpose: infrastructure must not care about
-// API versions. Add /health/ready with dependency checks once there are any.
+// Liveness probe. Registered before the rate limiter so probes are never
+// throttled. Add /api/v1/health/ready with dependency checks once there are any.
 app.get("/api/v1/health", (_req: Request, res: Response) => {
   res.status(200).json({
     message: "Server status OK",

@@ -9,6 +9,7 @@ import {
   store,
   TEST_USER,
   toCookieHeader,
+  validationIssues,
 } from "./auth.helpers.js";
 
 vi.mock("../../lib/auth.js", async () => {
@@ -176,38 +177,36 @@ describe("POST /api/v1/auth/sign-up", () => {
     });
   });
 
-  // The shape the README documents under "Error responses".
+  // The controller sends the ZodError itself as `details`.
   describe("validation details", () => {
-    it("names the failing field under details.body.fieldErrors", async () => {
+    it("sends the ZodError naming the failing field", async () => {
       const response = await signUp({ ...TEST_USER, email: "not-an-email" });
 
-      expect(response.body.details).toMatchObject({
-        body: { fieldErrors: { email: [expect.any(String)] } },
-      });
+      expect(response.body.details.name).toBe("ZodError");
+      expect(validationIssues(response.body)).toEqual([
+        expect.objectContaining({ path: ["email"] }),
+      ]);
     });
 
     it("passes the schema's own message through for the failing field", async () => {
       const response = await signUp({ ...TEST_USER, password: "p".repeat(7) });
 
-      expect(response.body.details).toMatchObject({
-        body: {
-          fieldErrors: { password: ["Password should be at least 8 characters long."] },
-        },
-      });
+      expect(validationIssues(response.body)).toEqual([
+        expect.objectContaining({
+          path: ["password"],
+          message: "Password should be at least 8 characters long.",
+        }),
+      ]);
     });
 
     it("lists every missing field of an empty body", async () => {
       const response = await signUp({});
 
-      expect(response.body.details).toMatchObject({
-        body: {
-          fieldErrors: {
-            username: [expect.any(String)],
-            email: [expect.any(String)],
-            password: [expect.any(String)],
-          },
-        },
-      });
+      expect(validationIssues(response.body).map((issue) => issue.path[0])).toEqual([
+        "username",
+        "email",
+        "password",
+      ]);
     });
 
     it("does not echo a rejected password back in the error", async () => {

@@ -2,16 +2,16 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import app from "../app.js";
 
-describe("GET /health", () => {
+describe("GET /api/v1/health", () => {
   it("responds 200 with the status payload", async () => {
-    const response = await request(app).get("/health");
+    const response = await request(app).get("/api/v1/health");
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "Server status OK" });
   });
 
   it("responds as JSON", async () => {
-    const response = await request(app).get("/health");
+    const response = await request(app).get("/api/v1/health");
 
     expect(response.headers["content-type"]).toMatch(/application\/json/);
   });
@@ -34,7 +34,7 @@ describe("unknown routes", () => {
 describe("body parsing", () => {
   it("rejects malformed json with a 4xx rather than crashing", async () => {
     const response = await request(app)
-      .post("/health")
+      .post("/api/v1/health")
       .set("Content-Type", "application/json")
       .send('{"broken":');
 
@@ -45,7 +45,7 @@ describe("body parsing", () => {
 
 describe("security headers", () => {
   it("sets helmet defaults and hides the framework", async () => {
-    const response = await request(app).get("/health");
+    const response = await request(app).get("/api/v1/health");
 
     expect(response.headers["x-content-type-options"]).toBe("nosniff");
     expect(response.headers["x-frame-options"]).toBeDefined();
@@ -57,7 +57,7 @@ describe("security headers", () => {
 describe("cors", () => {
   it("allows the configured web origin", async () => {
     const response = await request(app)
-      .get("/health")
+      .get("/api/v1/health")
       .set("Origin", "http://localhost:3000");
 
     expect(response.headers["access-control-allow-origin"]).toBe("http://localhost:3000");
@@ -66,7 +66,7 @@ describe("cors", () => {
 
   it("does not echo an origin that is not on the list", async () => {
     const response = await request(app)
-      .get("/health")
+      .get("/api/v1/health")
       .set("Origin", "https://evil.example");
 
     expect(response.headers["access-control-allow-origin"]).toBeUndefined();
@@ -74,7 +74,7 @@ describe("cors", () => {
 
   it("answers preflight for the configured origin", async () => {
     const response = await request(app)
-      .options("/health")
+      .options("/api/v1/health")
       .set("Origin", "http://localhost:3000")
       .set("Access-Control-Request-Method", "POST");
 
@@ -85,14 +85,14 @@ describe("cors", () => {
 
 describe("request id", () => {
   it("mints an id and echoes it in the response", async () => {
-    const response = await request(app).get("/health");
+    const response = await request(app).get("/api/v1/health");
 
     expect(response.headers["x-request-id"]).toMatch(/^[0-9a-f-]{36}$/);
   });
 
   it("propagates an id supplied by an upstream caller", async () => {
     const response = await request(app)
-      .get("/health")
+      .get("/api/v1/health")
       .set("X-Request-Id", "trace-abc-123");
 
     expect(response.headers["x-request-id"]).toBe("trace-abc-123");

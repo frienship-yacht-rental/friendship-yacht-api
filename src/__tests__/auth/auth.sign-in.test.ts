@@ -8,6 +8,7 @@ import {
   store,
   TEST_USER,
   toCookieHeader,
+  validationIssues,
 } from "./auth.helpers.js";
 
 vi.mock("../../lib/auth.js", async () => {
@@ -329,35 +330,33 @@ describe("POST /api/v1/auth/sign-in validation", () => {
 });
 
 describe("POST /api/v1/auth/sign-in validation details", () => {
-  it("lists the failing field under details.body.fieldErrors", async () => {
+  it("sends the ZodError naming the failing field", async () => {
     const response = await signIn({
       email: "not-an-email",
       password: TEST_USER.password,
     });
 
-    expect(response.body.details).toMatchObject({
-      body: { fieldErrors: { email: expect.arrayContaining([expect.any(String)]) } },
-    });
+    expect(response.body.details.name).toBe("ZodError");
+    expect(validationIssues(response.body)).toEqual([
+      expect.objectContaining({ path: ["email"] }),
+    ]);
   });
 
   it("reports the schema's message for an empty password", async () => {
     const response = await signIn({ email: TEST_USER.email, password: "" });
 
-    expect(response.body.details).toMatchObject({
-      body: {
-        fieldErrors: { password: ["Password is required."] },
-      },
-    });
+    expect(validationIssues(response.body)).toEqual([
+      expect.objectContaining({ path: ["password"], message: "Password is required." }),
+    ]);
   });
 
   it("lists every missing field for an empty body", async () => {
     const response = await signIn({});
 
-    expect(response.body.details).toMatchObject({
-      body: {
-        fieldErrors: { email: expect.any(Array), password: expect.any(Array) },
-      },
-    });
+    expect(validationIssues(response.body).map((issue) => issue.path[0])).toEqual([
+      "email",
+      "password",
+    ]);
   });
 
   it("does not echo the password of a rejected body", async () => {

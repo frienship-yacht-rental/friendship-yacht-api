@@ -4,19 +4,22 @@ import { BetterAuthError } from "../lib/errors.js";
 import type { IAuthService, SignInType, SignUpType } from "../schemas/user.schema.js";
 
 export class AuthService implements IAuthService {
-  async signIn({ email, password }: SignInType) {
+  async signIn({ email, password }: SignInType, headers: Headers) {
     try {
-      const data = await auth.api.signInEmail({
+      const { response, headers: responseHeaders } = await auth.api.signInEmail({
         body: {
           email,
           password,
           rememberMe: true,
           callbackURL: "http://localhost:8000", //TODO : Have to update this URL
         },
+        headers,
+        returnHeaders: true,
       });
 
       return {
-        data,
+        data: response,
+        cookies: responseHeaders.getSetCookie(),
         error: null,
       };
     } catch (error) {
@@ -25,9 +28,9 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async signUp({ email, password, username }: SignUpType) {
+  async signUp({ email, password, username }: SignUpType, headers: Headers) {
     try {
-      const data = await auth.api.signUpEmail({
+      const { response, headers: responseHeaders } = await auth.api.signUpEmail({
         body: {
           email,
           name: username,
@@ -35,10 +38,13 @@ export class AuthService implements IAuthService {
           rememberMe: true,
           callbackURL: "http://localhost:8000", //TODO : Have to update this URL
         },
+        headers,
+        returnHeaders: true,
       });
 
       return {
-        data,
+        data: response,
+        cookies: responseHeaders.getSetCookie(),
         error: null,
       };
     } catch (error) {
@@ -47,12 +53,16 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async signOut() {
+  async signOut(headers: Headers) {
     try {
-      const data = await auth.api.signOut();
+      const { response, headers: responseHeaders } = await auth.api.signOut({
+        headers,
+        returnHeaders: true,
+      });
 
       return {
-        data,
+        data: response,
+        cookies: responseHeaders.getSetCookie(),
         error: null,
       };
     } catch (error) {

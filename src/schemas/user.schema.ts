@@ -23,8 +23,9 @@ export const SIGN_UP_VALIDATION = z.object({
 export type SignInType = z.infer<typeof SIGN_IN_VALIDATION>;
 export type SignUpType = z.infer<typeof SIGN_UP_VALIDATION>;
 
+/** `cookies` are the Set-Cookie values better-auth wants sent back to the browser. */
 type BetterAuthResponse<TData, TError> =
-  { data: TData; error: null } | { data: null; error: TError };
+  { data: TData; cookies: string[]; error: null } | { data: null; error: TError };
 
 type SignInSession = Awaited<ReturnType<typeof auth.api.signInEmail>>;
 type SignUpSession = Awaited<ReturnType<typeof auth.api.signUpEmail>>;
@@ -36,14 +37,13 @@ type AuthError = {
 };
 
 export interface IAuthService {
-  signIn: ({
-    email,
-    password,
-  }: SignInType) => Promise<BetterAuthResponse<SignInSession, AuthError>>;
-  signUp: ({
-    email,
-    username,
-    password,
-  }: SignUpType) => Promise<BetterAuthResponse<SignUpSession, AuthError>>;
-  signOut: () => Promise<BetterAuthResponse<SignOutSession, AuthError>>;
+  signIn: (
+    { email, password }: SignInType,
+    headers: Headers,
+  ) => Promise<BetterAuthResponse<SignInSession, AuthError>>;
+  signUp: (
+    { email, username, password }: SignUpType,
+    headers: Headers,
+  ) => Promise<BetterAuthResponse<SignUpSession, AuthError>>;
+  signOut: (headers: Headers) => Promise<BetterAuthResponse<SignOutSession, AuthError>>;
 }

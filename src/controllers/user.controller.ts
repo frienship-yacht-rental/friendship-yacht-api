@@ -1,3 +1,4 @@
+import { fromNodeHeaders } from "better-auth/node";
 import type { RequestHandler, Request, Response } from "express";
 import { ValidationError } from "../lib/errors.js";
 import type { ApiResponse } from "../schemas/apiResponse.schema.js";
@@ -17,8 +18,12 @@ class UserController {
 
     const { email, password, username } = data;
 
-    const result = await this.service.signUp({ email, password, username });
+    const result = await this.service.signUp(
+      { email, password, username },
+      fromNodeHeaders(req.headers),
+    );
 
+    res.setHeader("Set-Cookie", result.cookies);
     res.status(201).json({
       message: "User created successfully",
       success: true,
@@ -38,8 +43,12 @@ class UserController {
 
     const { email, password } = data;
 
-    const result = await this.service.signIn({ email, password });
+    const result = await this.service.signIn(
+      { email, password },
+      fromNodeHeaders(req.headers),
+    );
 
+    res.setHeader("Set-Cookie", result.cookies);
     res.status(200).json({
       message: "User signed in successfully",
       success: true,
@@ -55,8 +64,9 @@ class UserController {
     req: Request,
     res: Response<ApiResponse<null>>,
   ) => {
-    await this.service.signOut();
+    const result = await this.service.signOut(fromNodeHeaders(req.headers));
 
+    res.setHeader("Set-Cookie", result.cookies);
     res.status(204).json({
       message: "User signed out successfully",
       success: true,

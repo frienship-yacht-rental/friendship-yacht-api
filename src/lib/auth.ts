@@ -1,5 +1,6 @@
-import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins";
 import { env } from "../config/env.js";
 import { db } from "../db/index.js";
 import { account, session, user, verification } from "../db/schema.js";
@@ -18,4 +19,5 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
   },
+  plugins: [admin()],
 });

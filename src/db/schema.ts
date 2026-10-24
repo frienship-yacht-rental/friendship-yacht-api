@@ -1,12 +1,15 @@
 import { defineRelationsPart } from "drizzle-orm";
 import {
-  mysqlTable,
-  varchar,
-  text,
-  timestamp,
   boolean,
   index,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
 } from "drizzle-orm/mysql-core";
+
+export const roles = ["admin", "support", "user"] as const;
 
 export const user = mysqlTable("user", {
   id: varchar("id", { length: 36 }).primaryKey(),
@@ -14,6 +17,10 @@ export const user = mysqlTable("user", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  role: mysqlEnum("role", roles).default("user").notNull(),
+  banned: boolean("banned"),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires", { fsp: 6 }),
   createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { fsp: 3 })
     .defaultNow()
@@ -31,6 +38,7 @@ export const session = mysqlTable(
     updatedAt: timestamp("updated_at", { fsp: 3 })
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    impersonatedBy: text("impersonated_by"),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
     userId: varchar("user_id", { length: 36 })

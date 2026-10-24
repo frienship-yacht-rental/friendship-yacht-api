@@ -7,7 +7,11 @@ if (process.env.NODE_ENV !== "test") {
   loadDotenv({ quiet: true });
 }
 
+const environments = ["development", "test", "production"] as const;
+
 export const envSchema = z.object({
+  NODE_ENV: z.enum(environments).default("development"),
+
   PORT: z.coerce.number().int().min(1).max(65535).default(8000),
 
   /**

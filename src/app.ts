@@ -1,6 +1,6 @@
 import cors from "cors";
-import express from "express";
 import type { Express, Request, Response } from "express";
+import express from "express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -9,7 +9,7 @@ import { morganStream } from "./config/logger.js";
 import { TooManyRequestsError } from "./lib/errors.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { requestId } from "./middleware/request-id.js";
-import { userRouter } from "./routes/user.routes.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 
 // Versioned API surface. Breaking changes get a new prefix.
 const API_PREFIX = "/api/v1";
@@ -64,7 +64,7 @@ app.use(
   }),
 );
 
-app.use(`${API_PREFIX}/auth`, userRouter);
+app.use(`${API_PREFIX}/auth`, authRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

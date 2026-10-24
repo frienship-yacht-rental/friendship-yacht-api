@@ -1,66 +1,53 @@
-# ---------- Dependencies ----------
+# Dependencies
 node_modules/
-.pnp/
-.pnp.js
-.pnp.cjs
+jspm_packages/
+web_modules/
 
-# ---------- Build output ----------
+# Production Build Outputs (TypeScript compilation)
 dist/
 build/
 out/
 *.tsbuildinfo
 
-# ---------- Logs ----------
-# Winston writes here during local development only; never push these.
-logs/
+# Environment Variables & Secrets (CRITICAL)
+.env*
+!.env.example
+!.env.sql.example
+
+# Logs and Diagnostics
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
 lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# ---------- Environment ----------
-.env
-.env.local
-.env.*.local
-.env.development
-.env.production
-.env.test
-!.env.example
-
-# ---------- Testing ----------
+# Testing & Coverage
 coverage/
-*.lcov
 .nyc_output/
-.vitest/
+.jest/
 
-# ---------- Caches ----------
-.cache/
-.eslintcache
-.parcel-cache/
-.npm/
-.temp/
-.tmp/
-
-# ---------- Editors ----------
-.vscode/*
+# IDEs and Editors
+.vscode/
 !.vscode/extensions.json
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 *.swp
-*.swo
-*.sublime-workspace
 
-# ---------- OS ----------
+# OS Metadata
 .DS_Store
-.DS_Store?
-._*
 Thumbs.db
-ehthumbs.db
-Desktop.ini
 
-# ---------- Misc ----------
-*.pid
-*.seed
-*.pid.lock
-.pnpm-store/
+# Optional: Package Manager Lock Files
+# (Uncomment the lines below ONLY if you want to skip tracking lockfiles. 
+# Keeping lockfiles is generally recommended for teams/production.)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+.docker
+docker

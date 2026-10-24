@@ -1,11 +1,11 @@
 import { fromNodeHeaders } from "better-auth/node";
-import type { RequestHandler, Request, Response } from "express";
-import { ValidationError } from "../lib/errors.js";
-import type { ApiResponse } from "../schemas/apiResponse.schema.js";
-import { SIGN_IN_VALIDATION, SIGN_UP_VALIDATION } from "../schemas/user.schema.js";
-import { AuthService } from "../services/user.service.js";
+import type { Request, RequestHandler, Response } from "express";
+import type { ApiResponse } from "../../lib/api-response.js";
+import { ValidationError } from "../../lib/errors.js";
+import { SIGN_IN_VALIDATION, SIGN_UP_VALIDATION } from "./auth.schema.js";
+import { AuthService } from "./auth.service.js";
 
-class UserController {
+class AuthController {
   constructor(private readonly service: AuthService) {}
 
   signUpUser: RequestHandler = async (
@@ -71,4 +71,4 @@ class UserController {
   };
 }
 
-export const userController = new UserController(new AuthService());
+export const authController = new AuthController(new AuthService());

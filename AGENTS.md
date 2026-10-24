@@ -131,8 +131,8 @@ params`. One logical change per commit.
 
 To start a new service from this repository:
 
-1. The auth feature is generic. To drop it, delete the `user.*.ts` files and
-   `src/__tests__/auth/`, and remove the `userRouter` mount from `src/app.ts`.
+1. The auth feature is generic. To drop it, delete the `auth.*.ts` files and
+   `src/__tests__/auth/`, and remove the `authRouter` mount from `src/app.ts`.
 2. Rename `name` and `description` in `package.json`, and the logger's
    `defaultMeta.service` in `src/config/logger.ts`.
 3. Rewrite the defaults in `.env.example`, including the database name in

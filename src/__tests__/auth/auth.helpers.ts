@@ -6,7 +6,7 @@ import {
   type Verification,
 } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
-import type { SignInType, SignUpType } from "../../schemas/user.schema.js";
+import type { SignInType, SignUpType } from "../../modules/auth/auth.schema.js";
 
 /**
  * Shared harness for the auth route specs: a real better-auth instance on an

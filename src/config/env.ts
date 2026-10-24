@@ -7,15 +7,12 @@ if (process.env.NODE_ENV !== "test") {
   loadDotenv({ quiet: true });
 }
 
-const logLevels = ["error", "warn", "info", "http", "verbose", "debug", "silly"] as const;
+const environments = ["development", "test", "production"] as const;
 
 export const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z.enum(environments).default("development"),
 
   PORT: z.coerce.number().int().min(1).max(65535).default(8000),
-
-  /** Defaults to `debug` in development and `info` in production (see logger). */
-  LOG_LEVEL: z.enum(logLevels).optional(),
 
   /**
    * Comma-separated list of origins allowed to call this API from a browser.
@@ -45,6 +42,16 @@ export const envSchema = z.object({
    * rate limiting use the client address from X-Forwarded-For, not the proxy.
    */
   TRUST_PROXY: z.stringbool().default(false),
+
+  /** MySQL connection string, e.g. mysql://user:pass@host:3306/db. */
+  DATABASE_URL: z.url(),
+
+  /** Signs session cookies and tokens. Generate with `openssl rand -base64 32`. */
+  BETTER_AUTH_SECRET: z.string().min(32),
+  /** Public base URL of this API; better-auth builds callback URLs from it. */
+  BETTER_AUTH_URL: z.url(),
+
+  ADMIN_URL: z.url(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -62,5 +69,6 @@ if (!parsed.success) {
  */
 export const env: z.infer<typeof envSchema> = parsed.data;
 
-export const isProduction = env.NODE_ENV === "production";
-export const isTest = env.NODE_ENV === "test";
+// NODE_ENV is set by the runner (vitest, the start command), not by .env.
+export const isProduction = process.env.NODE_ENV === "production";
+export const isTest = process.env.NODE_ENV === "test";

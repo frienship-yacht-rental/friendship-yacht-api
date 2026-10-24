@@ -1,6 +1,6 @@
 import cors from "cors";
-import express from "express";
 import type { Express, Request, Response } from "express";
+import express from "express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -9,7 +9,10 @@ import { morganStream } from "./config/logger.js";
 import { TooManyRequestsError } from "./lib/errors.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { requestId } from "./middleware/request-id.js";
-import { API_PREFIX, createApiRouter } from "./routes.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
+
+// Versioned API surface. Breaking changes get a new prefix.
+const API_PREFIX = "/api/v1";
 
 const app: Express = express();
 
@@ -40,9 +43,9 @@ app.use(
   ),
 );
 
-// Liveness probe. Unversioned on purpose: infrastructure must not care about
-// API versions. Add /health/ready with dependency checks once there are any.
-app.get("/health", (_req: Request, res: Response) => {
+// Liveness probe. Registered before the rate limiter so probes are never
+// throttled. Add /api/v1/health/ready with dependency checks once there are any.
+app.get("/api/v1/health", (_req: Request, res: Response) => {
   res.status(200).json({
     message: "Server status OK",
   });
@@ -59,8 +62,9 @@ app.use(
     // Route through the shared error handler so the body has the usual shape.
     handler: (_req, _res, next) => next(new TooManyRequestsError()),
   }),
-  createApiRouter(),
 );
+
+app.use(`${API_PREFIX}/auth`, authRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

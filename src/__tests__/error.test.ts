@@ -1,7 +1,8 @@
+import { APIError } from "better-auth";
 import express from "express";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { AppError, ValidationError } from "../lib/errors.js";
+import { AppError, BetterAuthError, ValidationError } from "../lib/errors.js";
 import { codeForStatus, errorHandler, type HttpError } from "../middleware/error.js";
 import { requestId } from "../middleware/request-id.js";
 
@@ -31,6 +32,7 @@ describe("errorHandler", () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({
+      success: false,
       message: "Internal server error",
       code: "INTERNAL_ERROR",
       requestId: expect.any(String),
@@ -101,6 +103,34 @@ describe("errorHandler with AppError", () => {
     expect(response.status).toBe(503);
     expect(response.body.details).toBeUndefined();
     expect(JSON.stringify(response.body)).not.toContain("db.internal");
+  });
+});
+
+describe("errorHandler with BetterAuthError", () => {
+  it("carries better-auth's status, code and message", async () => {
+    const error = new BetterAuthError(
+      new APIError("UNAUTHORIZED", {
+        message: "Invalid email or password",
+        code: "INVALID_EMAIL_OR_PASSWORD",
+      }),
+    );
+
+    const response = await request(appThrowing(error)).get("/boom");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toMatchObject({
+      message: "Invalid email or password",
+      code: "INVALID_EMAIL_OR_PASSWORD",
+    });
+  });
+
+  it("falls back to AUTH_ERROR when better-auth sends no code", async () => {
+    const error = new BetterAuthError(new APIError("FORBIDDEN", { message: "Nope" }));
+
+    const response = await request(appThrowing(error)).get("/boom");
+
+    expect(response.status).toBe(403);
+    expect(response.body).toMatchObject({ message: "Nope", code: "AUTH_ERROR" });
   });
 });
 

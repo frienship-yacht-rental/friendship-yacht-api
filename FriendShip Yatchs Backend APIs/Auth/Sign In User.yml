@@ -1,0 +1,22 @@
+info:
+  name: Sign In User
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/auth/sign-in"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "parthbrajput30@gmail.com",
+        "password": "123456789"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

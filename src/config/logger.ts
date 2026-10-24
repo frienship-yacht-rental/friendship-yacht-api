@@ -1,6 +1,6 @@
 import path from "node:path";
 import winston from "winston";
-import { env, isProduction, isTest } from "./env.js";
+import { isProduction, isTest } from "./env.js";
 
 const { colorize, combine, errors, json, printf, splat, timestamp, uncolorize } =
   winston.format;
@@ -12,7 +12,7 @@ const { colorize, combine, errors, json, printf, splat, timestamp, uncolorize } 
  */
 export const LOG_DIR = path.resolve(process.cwd(), "logs");
 
-const level = env.LOG_LEVEL ?? (isProduction ? "info" : "debug");
+const level = isProduction ? "info" : "debug";
 
 /** Shared across every file transport: rotate at 5 MB and keep the last 5 files. */
 const fileRotation = {
